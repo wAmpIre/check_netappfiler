@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-# $Id: check_netappfiler_netsnmp.py 78 2009-03-17 12:07:07Z svelt $
-# (c) 2006-2008 by Sven Velt, Teamix GmbH
+# $Id: check_netappfiler_netsnmp.py 79 2009-03-19 10:39:28Z svelt $
+# (c) 2006-2009 by Sven Velt, Teamix GmbH
 #                  sv@teamix.de
 
 import optparse
@@ -79,6 +79,16 @@ OIDs	= {
 		'df64_FS_kBTotal':		'.1.3.6.1.4.1.789.1.5.4.1.29',
 		'df64_FS_kBUsed':		'.1.3.6.1.4.1.789.1.5.4.1.30',
 		'df64_FS_kBAvail':		'.1.3.6.1.4.1.789.1.5.4.1.31',
+
+		'License_SnapMirror':		'.1.3.6.1.4.1.789.1.9.19.0',
+		'License_NFS':			'.1.3.6.1.4.1.789.1.3.3.1.0',
+		'License_CIFS':			'.1.3.6.1.4.1.789.1.7.1.21.0',
+		'License_vFiler':		'.1.3.6.1.4.1.789.1.16.1.0',
+		'License_FCP':			'.1.3.6.1.4.1.789.1.17.1.0',
+		'License_iSCSI':		'.1.3.6.1.4.1.789.1.17.2.0',
+		'License_SnapVaultPrimary':	'.1.3.6.1.4.1.789.1.19.9.0',
+		'License_SnapVaultSecondary':	'.1.3.6.1.4.1.789.1.19.10.0',
+		'License_SIS':			'.1.3.6.1.4.1.789.1.23.1.0',
 
 		'CIFS_Connected_Users':		'.1.3.6.1.4.1.789.1.7.2.9.0',
 		'CIFS_Total_Ops':		'.1.3.6.1.4.1.789.1.7.3.1.1.1.0',
@@ -185,6 +195,10 @@ Enum_Snapmirror_State = {
 		'4' : 'quiesced',
 		'5' : 'source',
 		'6' : 'unknown',
+}
+Enum_Licensed = {
+		'1' : 'false',
+		'2' : 'true',
 }
 
 
@@ -432,6 +446,14 @@ if options.subsys == '' or options.subsys =='global':
 		print 'Uptime in seconds: %s' % SNMPGET('.1.3.6.1.2.1.1.3.0')
 		print 'ONTAP version: %s' % '.'.join(ONTAPver)
 		print 'Global system status: %s, %s' % (GlobalStatusCode, GlobalStatusMsg)
+
+
+
+elif options.subsys == 'version':
+	Model = SNMPGET(OIDs['Model'])
+	ONTAPver = re.search("NetApp\sRelease\s+([\d.a-zA-Z]+):", SNMPGET(OIDs['ONTAP_Version'])).group(1).split('.')
+	ReturnMsg =  Model.replace('"','') + ': ONTAP version: %s' % '.'.join(ONTAPver)
+	ReturnCode = RETURNCODE['OK']
 
 
 
@@ -802,32 +824,36 @@ elif options.subsys == 'cluster':
 
 
 elif options.subsys == 'snapmirror':
-	SnapmirrorOn = int(SNMPGET(OIDs['Snapmirror_On']))
-	if SnapmirrorOn != 2:
-		ReturnMsg  = 'SnapMirror is off!'
-		ReturnCode = RETURNCODE['WARNING']
+	if SNMPGET(OIDs['License_SnapMirror']) != '2':
+		ReturnMsg = 'SnapMirror not licensed!'
+		ReturnCode = RETURNCODE['CRITICAL']
 	else:
-		ReturnCode = RETURNCODE['OK']
-
-		if options.fs == '0':
-			ReturnMsg  = 'SnapMirror is on'
-		elif options.fs.isdigit() == False:
-		# is fs not a number?
-			ReturnMsg  = 'Sorry! You have to provide index number at the moment!'
-			ReturnCode = RETURNCODE['UNKNOWN']
+		SnapmirrorOn = int(SNMPGET(OIDs['Snapmirror_On']))
+		if SnapmirrorOn != 2:
+			ReturnMsg  = 'SnapMirror is off!'
+			ReturnCode = RETURNCODE['WARNING']
 		else:
-			SnapmirrorSrc		= SNMPGET(OIDs['Snapmirror_Src'] + "." + options.fs)
-			SnapmirrorDst		= SNMPGET(OIDs['Snapmirror_Dst'] + "." + options.fs)
-			SnapmirrorStatus	= int(SNMPGET(OIDs['Snapmirror_Status'] + "." + options.fs))
-			SnapmirrorState		= int(SNMPGET(OIDs['Snapmirror_State'] + "." + options.fs))
+			ReturnCode = RETURNCODE['OK']
 
-			if SnapmirrorState in OkWarnCrit['SnapmirrorState'][2]:
-				ReturnCode = RETURNCODE['CRITICAL']
-			elif SnapmirrorState in OkWarnCrit['SnapmirrorState'][1]:
-				ReturnCode = RETURNCODE['WARNING']
+			if options.fs == '0':
+				ReturnMsg  = 'SnapMirror is on'
+			elif options.fs.isdigit() == False:
+			# is fs not a number?
+				ReturnMsg  = 'Sorry! You have to provide index number at the moment!'
+				ReturnCode = RETURNCODE['UNKNOWN']
+			else:
+				SnapmirrorSrc		= SNMPGET(OIDs['Snapmirror_Src'] + "." + options.fs)
+				SnapmirrorDst		= SNMPGET(OIDs['Snapmirror_Dst'] + "." + options.fs)
+				SnapmirrorStatus	= int(SNMPGET(OIDs['Snapmirror_Status'] + "." + options.fs))
+				SnapmirrorState		= int(SNMPGET(OIDs['Snapmirror_State'] + "." + options.fs))
 
-			ReturnMsg = 'Snapmiror state is \'' + Enum_Snapmirror_State[str(SnapmirrorState)] + '\'. '
-			ReturnMsg += 'Source: \'' + SnapmirrorSrc + '\', Destination: \'' + SnapmirrorDst + '\', Status: \'' + Enum_Snapmirror_Status[str(SnapmirrorStatus)] + '\''
+				if SnapmirrorState in OkWarnCrit['SnapmirrorState'][2]:
+					ReturnCode = RETURNCODE['CRITICAL']
+				elif SnapmirrorState in OkWarnCrit['SnapmirrorState'][1]:
+					ReturnCode = RETURNCODE['WARNING']
+
+				ReturnMsg = 'SnapMiror state is \'' + Enum_Snapmirror_State[str(SnapmirrorState)] + '\'. '
+				ReturnMsg += 'Source: \'' + SnapmirrorSrc + '\', Destination: \'' + SnapmirrorDst + '\', Status: \'' + Enum_Snapmirror_Status[str(SnapmirrorStatus)] + '\''
 
 
 

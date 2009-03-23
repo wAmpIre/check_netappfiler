@@ -1,3 +1,8 @@
+2009-03-19:
+===========
+- Re-Added "version" subsystem due to user request
+- Added check if SnapMirror is licensed
+
 2009-03-17:
 ===========
 - Fixes to "snapmirror" subsystem - did it every work?!?
