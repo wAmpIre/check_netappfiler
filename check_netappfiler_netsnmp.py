@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# $Id: check_netappfiler_netsnmp.py 69 2008-12-02 16:24:51Z svelt $
+# $Id: check_netappfiler_netsnmp.py 70 2008-12-11 15:00:59Z svelt $
 # (c) 2006-2008 by Sven Velt, Teamix GmbH
 #                  sv@teamix.de
 
@@ -209,7 +209,7 @@ def SNMPGET(oid):
 	result = netsnmp.snmpget(oid, Version = int(options.version), DestHost=options.host, Community=options.community)[0]
 
 	if result == None:
-		back2nagios('SNMP UNKNOWN: Timeout or no answer from %s' % options.host, RETURNCODE['UNKNOWN'])
+		back2nagios(RETURNCODE['UNKNOWN'], 'SNMP UNKNOWN: Timeout or no answer from %s' % options.host)
 
 	if options.verb >= 1:
 		print "%40s -> %s" %  (oid, result)

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: testall_netsnmp.sh 67 2008-11-21 14:09:08Z svelt $
+# $Id: testall_netsnmp.sh 70 2008-12-11 15:00:59Z svelt $
 
 if [ -z "$1" ]
 then
@@ -25,11 +25,11 @@ done
 
 for FSIDX in aggr0 /vol/vol0
 do
-	./check_netappfiler_netsnmp.py -H $1 -s vol -f $FSIDX -w 50 -c 75
+	./check_netappfiler_netsnmp.py -H $1 -s vol -f $FSIDX -w 50% -c 75%
 done
 
 for FSIDX in 3 5 7
 do
-	./check_netappfiler_netsnmp.py -H $1 -s vol -f $FSIDX -w 50 -c 75
+	./check_netappfiler_netsnmp.py -H $1 -s vol -f $FSIDX -w 50% -c 75%
 done
 

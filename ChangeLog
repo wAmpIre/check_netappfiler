@@ -1,3 +1,8 @@
+2008-12-11:
+===========
+- Small fix in check_netappfiler_netsnmp.py
+- Small fixes in testall*.sh
+
 2008-12-02:
 ===========
 - Added some caching (with "shelve") for FSIDs
@@ -40,6 +45,15 @@
 ===========
 - Fix for volumes > 2TB. Thank god for 32 bit signed integers :-/
 
+2008-04-24:
+===========
+- more work on "snapmirror", testing needed!
+
+2008-04-23:
+===========
+- New EXPERIMENTAL subsystem "cluster", please test and send feedback
+- Start of new subsystem "snapmirror", more work to do!
+
 2008-04-22:
 ===========
 - Subsystem "fs" now accepts path names to "-f"
@@ -47,13 +61,4 @@
 - Subsystem "sparedisk" alias to (old) "disk"
 - New Subsystems "cifs-users" and "cifs-stats"
   Thanks to Jochen Bartl!
-
-2008-04-23:
-===========
-- New EXPERIMENTAL subsystem "cluster", please test and send feedback
-- Start of new subsystem "snapmirror", more work to do!
-
-2008-04-24:
-===========
-- more work on "snapmirror", testing needed!
 
