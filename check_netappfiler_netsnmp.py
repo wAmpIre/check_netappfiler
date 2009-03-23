@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# $Id: check_netappfiler_netsnmp.py 79 2009-03-19 10:39:28Z svelt $
+# $Id: check_netappfiler_netsnmp.py 80 2009-03-19 11:29:38Z svelt $
 # (c) 2006-2009 by Sven Velt, Teamix GmbH
 #                  sv@teamix.de
 
@@ -281,8 +281,11 @@ def get_fsid(fsid):
 			if dfFSName == fsid:
 				break
 
-		fsid = str(newindex)
-		
+		if dfFSName == fsid:
+			fsid = str(newindex)
+		else:
+			back2nagios(RETURNCODE['CRITICAL'], 'Volume/Filesystem "%s" not found!' % fsid)
+
 	return fsid
 
 def get_kb_fs(fsid):

@@ -2,6 +2,7 @@
 ===========
 - Re-Added "version" subsystem due to user request
 - Added check if SnapMirror is licensed
+- Check if vol/fs is found or not
 
 2009-03-17:
 ===========
