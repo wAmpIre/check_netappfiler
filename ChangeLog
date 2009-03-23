@@ -1,3 +1,7 @@
+2009-03-17:
+===========
+- Fixes to "snapmirror" subsystem - did it every work?!?
+
 2008-12-23:
 ===========
 - check_netappfiler_netsnmp.py

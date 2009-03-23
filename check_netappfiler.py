@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# $Id: check_netappfiler.py 72 2008-12-22 12:26:04Z svelt $
+# $Id: check_netappfiler.py 78 2009-03-17 12:07:07Z svelt $
 # (c) 2006-2008 by Sven Velt, Teamix GmbH
 #                  sv@teamix.de
 
@@ -839,19 +839,18 @@ elif options.subsys == 'snapmirror':
 			ReturnMsg  = 'Sorry! You have to provide index number at the moment!'
 			ReturnCode = RETURNCODE['UNKNOWN']
 		else:
-			SnapmirrorSrc		= SNMPGET(OIDs['Snapmirror_Src'])
-			SnapmirrorDst		= SNMPGET(OIDs['Snapmirror_Dst'])
-			SnapmirrorStatus	= int(SNMPGET(OIDs['Snapmirror_Status']))
-			SnapmirrorState		= int(SNMPGET(OIDs['Snapmirror_State']))
+			SnapmirrorSrc		= SNMPGET(OIDs['Snapmirror_Src'] + "." + options.fs)
+			SnapmirrorDst		= SNMPGET(OIDs['Snapmirror_Dst'] + "." + options.fs)
+			SnapmirrorStatus	= int(SNMPGET(OIDs['Snapmirror_Status'] + "." + options.fs))
+			SnapmirrorState		= int(SNMPGET(OIDs['Snapmirror_State'] + "." + options.fs))
 
 			if SnapmirrorState in OkWarnCrit['SnapmirrorState'][2]:
-				ReturnMsg += ' Snapmiror state is ' + Enum_Snapmirror_State[SnapmirrorState] + '!'
 				ReturnCode = RETURNCODE['CRITICAL']
 			elif SnapmirrorState in OkWarnCrit['SnapmirrorState'][1]:
-				ReturnMsg += ' Snapmiror state is ' + Enum_Snapmirror_State[SnapmirrorState] + '!'
-				ReturnCode = RETURNCODE['CRITICAL']
+				ReturnCode = RETURNCODE['WARNING']
 
-			ReturnMsg += ' Source: ' + SnapmirrorSrc + ', Destination: ' + SnapmirrorDst + ', Status: ' + SnapmirrorStatus
+			ReturnMsg = 'Snapmiror state is \'' + Enum_Snapmirror_State[str(SnapmirrorState)] + '\'. '
+			ReturnMsg += 'Source: \'' + SnapmirrorSrc + '\', Destination: \'' + SnapmirrorDst + '\', Status: \'' + Enum_Snapmirror_Status[str(SnapmirrorStatus)] + '\''
 
 
 
