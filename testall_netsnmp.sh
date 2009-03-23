@@ -1,6 +1,4 @@
 #!/bin/sh
-#
-# $Id: testall_netsnmp.sh 76 2008-12-23 14:35:31Z svelt $
 
 if [ -z "$1" ]
 then

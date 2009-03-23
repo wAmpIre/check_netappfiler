@@ -1,6 +1,4 @@
 #!/bin/sh
-#
-# $Id: testallv3.sh 73 2008-12-22 15:55:30Z svelt $
 
 SECNAME=snmpuser
 AUTHKEY=dont4get

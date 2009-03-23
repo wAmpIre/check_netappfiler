@@ -1,9 +1,5 @@
 <?php
 #
-# Copyright (c) 2006-2008 Joerg Linge (http://www.pnp4nagios.org)
-# Template for check_disk
-# $Id: check_disk.php 367 2008-01-23 18:10:31Z pitchfork $
-#
 #
 # RRDtool Options
 $opt[1] = "--vertical-label By -l 0 -u $MAX[1] --title \"Filesystem  $hostname / $servicedesc\" ";

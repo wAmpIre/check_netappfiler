@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-# $Id: check_netappfiler.py 80 2009-03-19 11:29:38Z svelt $
 # (c) 2006-2009 by Sven Velt, Teamix GmbH
 #                  sv@teamix.de
 
