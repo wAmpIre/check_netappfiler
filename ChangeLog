@@ -1,0 +1,59 @@
+2008-12-02:
+===========
+- Added some caching (with "shelve") for FSIDs
+  + "--cache FILENAME" option added
+  + Reduce SNMPGETs on target, (much) faster now!!1!
+  + verifies cached fsid
+  + Use one cache file per host, e.g.:
+    ... --cache /var/tmp/nafscache_$HOSTADDRESS$ ...
+
+2008-11-21:
+===========
+- Some code cleanup
+- New subsystem "vol"
+  + More accurate check of volume incl. snapshot
+  + Same parameter as "fs", see testall*.s
+  + You *must* provide "-w" and "-c"!
+  + PNP-Template (colors WILL change in the future)
+- New "plugin": check_netappfiler_netsnmp.py
+  You need the Python bindings of net-snmp!
+  Debian: Use Lenny or ...
+          deb http://people.teamix.net/~svelt/debian/etch/net-snmp/ ./
+          in /etc/apt/sources.list for Etch
+
+2008-10-15:
+===========
+- Fix for cluster check (Rico Glöckner, thanks!)
+
+2008-09-17:
+===========
+- Heavy code cleaning
+- Long options no more available!
+- Initial support for ONTAP 7.3:
+  + SNMP v2c and v3! w00t! Counter64!
+  + New file: README.v3
+- Last fix for >2TB volumes only works for volumes <4TB
+  + fix for the fix, 2 additional SNMPGETs, more calculating :-/ or
+  + just use SNMP v2c or v3 - if you have ONTAP 7.3 :-)
+
+2008-07-29:
+===========
+- Fix for volumes > 2TB. Thank god for 32 bit signed integers :-/
+
+2008-04-22:
+===========
+- Subsystem "fs" now accepts path names to "-f"
+- New subsystem "faileddisk"
+- Subsystem "sparedisk" alias to (old) "disk"
+- New Subsystems "cifs-users" and "cifs-stats"
+  Thanks to Jochen Bartl!
+
+2008-04-23:
+===========
+- New EXPERIMENTAL subsystem "cluster", please test and send feedback
+- Start of new subsystem "snapmirror", more work to do!
+
+2008-04-24:
+===========
+- more work on "snapmirror", testing needed!
+

@@ -1,0 +1,24 @@
+Fast introduction to ONTAP 7.3 / SNMPv3:
+
+- Add a new role with "login-snmp" capability:
+
+  toaster> useradmin role add my-snmp-role -a login-snmp
+
+
+- Add a new group which gets this role:
+
+  toaster> useradmin group add my-snmp-group -r my-snmp-role
+
+
+- Add a new user in group "my-snmp-group"
+
+  toaster> useradmin user add my-snmp-user -g my-snmp-group
+
+  Password MUST have at least 8 characters and 1 numeric character
+
+
+- Switch to your UNIX box:
+
+  root@monitor:~> .../check_netappfiler.py -P 3 -U my-snmp-user -A P4ssw0rd -H toaster
+  NETAPP(global) OK - FAS2020: The system's global status is normal.
+
