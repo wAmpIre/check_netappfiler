@@ -1,3 +1,13 @@
+2008-12-22:
+===========
+- New subsystem "cacheage", added to testall*
+- PNP: Added and fixed some templates
+
+2008-12-15:
+===========
+- New PNP templates for "cpu", "sparedisk" and (obsolete) "fs"
+- PNP: check_command definition file
+
 2008-12-11:
 ===========
 - Small fix in check_netappfiler_netsnmp.py

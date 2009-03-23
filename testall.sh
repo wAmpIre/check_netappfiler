@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: testall.sh 70 2008-12-11 15:00:59Z svelt $
+# $Id: testall.sh 73 2008-12-22 15:55:30Z svelt $
 
 if [ -z "$1" ]
 then
@@ -8,7 +8,7 @@ then
 	exit 1
 fi
 
-for TEST in global cpu environment nvram sparedisk faileddisk cifs-users cifs-stats cluster snapmirror
+for TEST in global cpu environment nvram sparedisk faileddisk cifs-users cifs-stats cluster snapmirror cacheage
 do
 	./check_netappfiler.py -H $1 -s $TEST
 done

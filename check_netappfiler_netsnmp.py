@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# $Id: check_netappfiler_netsnmp.py 70 2008-12-11 15:00:59Z svelt $
+# $Id: check_netappfiler_netsnmp.py 72 2008-12-22 12:26:04Z svelt $
 # (c) 2006-2008 by Sven Velt, Teamix GmbH
 #                  sv@teamix.de
 
@@ -815,6 +815,13 @@ elif options.subsys == 'snapmirror':
 				ReturnCode = RETURNCODE['CRITICAL']
 
 			ReturnMsg += ' Source: ' + SnapmirrorSrc + ', Destination: ' + SnapmirrorDst + ', Status: ' + SnapmirrorStatus
+
+
+
+elif options.subsys == 'cacheage':
+	CacheAge = int(SNMPGET(OIDs['Cache_Age']))
+	ReturnCode = RETURNCODE['OK']
+	ReturnMsg = 'Cache Age %s minutes|nacacheage=%s;;;0;' % (CacheAge, CacheAge)
 
 
 
