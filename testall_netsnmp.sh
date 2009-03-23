@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: testall_netsnmp.sh 73 2008-12-22 15:55:30Z svelt $
+# $Id: testall_netsnmp.sh 76 2008-12-23 14:35:31Z svelt $
 
 if [ -z "$1" ]
 then
@@ -8,7 +8,7 @@ then
 	exit 1
 fi
 
-for TEST in global cpu environment nvram sparedisk faileddisk cifs-users cifs-stats cluster snapmirror cacheage
+for TEST in global cpu environment nvram sparedisk faileddisk cifs-users cifs-stats cluster snapmirror cacheage cp
 do
 	./check_netappfiler_netsnmp.py -H $1 -s $TEST
 done

@@ -1,3 +1,13 @@
+2008-12-23:
+===========
+- check_netappfiler_netsnmp.py
+  + Experimental snmpwalk implementation
+    * Delete lines 237&238 of Debian's libsnmp-python in
+      /usr/share/pycentral/libsnmp-python/site-packages/netsnmp/client.py
+      or your "client.py" - prints silly debugging information
+  + New subsystem "cp" (consistency points) for stats&graphing
+- PNP: template added for "cp"
+
 2008-12-22:
 ===========
 - New subsystem "cacheage", added to testall*

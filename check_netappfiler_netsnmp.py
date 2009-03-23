@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# $Id: check_netappfiler_netsnmp.py 72 2008-12-22 12:26:04Z svelt $
+# $Id: check_netappfiler_netsnmp.py 76 2008-12-23 14:35:31Z svelt $
 # (c) 2006-2008 by Sven Velt, Teamix GmbH
 #                  sv@teamix.de
 
@@ -42,6 +42,7 @@ OIDs	= {
 		'Env_Failed_PowerSup_Text':	'.1.3.6.1.4.1.789.1.2.4.5.0',
 		'NVRAM_Status':			'.1.3.6.1.4.1.789.1.2.5.1.0',
 
+		'CP':				'.1.3.6.1.4.1.789.1.2.6',
 		'CP_NV_Full':			'.1.3.6.1.4.1.789.1.2.6.6.0',
 		'CP_Totals':			'.1.3.6.1.4.1.789.1.2.6.8.0',
 		'CP_FS_Sync':			'.1.3.6.1.4.1.789.1.2.6.10.0',
@@ -207,6 +208,19 @@ def SNMPGET(oid):
 	VBoid = netsnmp.Varbind(oid)
 
 	result = netsnmp.snmpget(oid, Version = int(options.version), DestHost=options.host, Community=options.community)[0]
+
+	if result == None:
+		back2nagios(RETURNCODE['UNKNOWN'], 'SNMP UNKNOWN: Timeout or no answer from %s' % options.host)
+
+	if options.verb >= 1:
+		print "%40s -> %s" %  (oid, result)
+
+	return result
+
+def SNMPWALK(oid):
+	VBoid = netsnmp.Varbind(oid)
+
+	result = netsnmp.snmpwalk(oid, Version = int(options.version), DestHost=options.host, Community=options.community)
 
 	if result == None:
 		back2nagios(RETURNCODE['UNKNOWN'], 'SNMP UNKNOWN: Timeout or no answer from %s' % options.host)
@@ -822,6 +836,18 @@ elif options.subsys == 'cacheage':
 	CacheAge = int(SNMPGET(OIDs['Cache_Age']))
 	ReturnCode = RETURNCODE['OK']
 	ReturnMsg = 'Cache Age %s minutes|nacacheage=%s;;;0;' % (CacheAge, CacheAge)
+
+
+
+elif options.subsys == 'cp':
+	cp = SNMPWALK(OIDs['CP'])
+	ReturnCode = RETURNCODE['OK']
+	ReturnMsg  = 'Consistency Point (in progress %s seconds), Ops: Total(%s) ' % (float(cp[0])/100, cp[7])
+	ReturnMsg += 'Snapshot(%s) LowWaterMark(%s) HighWaterMark(%s) LogFull(%s) CP-b2b(%s) ' % cp[2:7]
+	ReturnMsg += 'Flush(%s) Sync(%s) LowVBuf(%s) CpDeferred(%s) LowDatavecs(%s)' % cp[8:13]
+	ReturnMsg += '|nacpprogress=%ss nacptotal=%sc ' % (float(cp[0])/100, cp[7])
+	ReturnMsg += 'nacpsnapshot=%sc nacplowwatermark=%sc nacphighwatermark=%sc nacplogfull=%s nacpb2b=%sc ' % cp[2:7]
+	ReturnMsg += 'nacpflush=%sc nacpsync=%sc nacplowvbuf=%sc nacpcpdeferred=%sc nacplowdatavecs=%sc' % cp[8:13]
 
 
 

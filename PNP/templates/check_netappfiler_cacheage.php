@@ -16,9 +16,9 @@ $def[1] .= "DEF:cacheage_max=$rrdfile:$DS[1]:MAX ";
 
 $def[1] .= "AREA:cacheage_max#6666ffcc: ";
 $def[1] .= "AREA:cacheage_min#ffffff ";
-$def[1] .= "LINE1:cacheage_avg#0000ff:\"Cache age in minutes:\" ";
-$def[1] .= "GPRINT:cacheage_avg:LAST:\"%3.1lf%% \" ";
-$def[1] .= "GPRINT:cacheage_min:MIN:\"(%3.1lf%% -\" ";
-$def[1] .= "GPRINT:cacheage_max:MAX:\"%3.1lf%%)\\n\" ";
+$def[1] .= "LINE1:cacheage_avg#0000ff:\"Cache age:\" ";
+$def[1] .= "GPRINT:cacheage_avg:LAST:\"%3.1lfmin \" ";
+$def[1] .= "GPRINT:cacheage_min:MIN:\"(%3.1lfmin -\" ";
+$def[1] .= "GPRINT:cacheage_max:MAX:\"%3.1lfmin)\\n\" ";
 
 ?>
