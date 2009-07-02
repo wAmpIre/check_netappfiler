@@ -15,7 +15,8 @@ $def[1] .= "DEF:snapsize=$rrdfile:$DS[4]:AVERAGE ";
 // $def[1] .= "CDEF:snapsnap=snap,snapsize,GT,snapsize,snap,IF ";
 $def[1] .= "CDEF:snapfree=snap,snapsize,GT,0,snapsize,snap,-,IF ";
 $def[1] .= "CDEF:snapover=snap,snapsize,GT,snap,snapsize,-,0,IF ";
-$def[1] .= "CDEF:datafree=datatotal,data,- ";
+$def[1] .= "CDEF:snapwoover=snap,snapover,- ";
+$def[1] .= "CDEF:datafree=datatotal,data,-,snapover,- ";
 
 $def[1] .= "CDEF:warn=data,0,*,$WARN[1],+ ";
 $def[1] .= "CDEF:crit=data,0,*,$CRIT[1],+ ";
@@ -28,7 +29,7 @@ $def[1] .= "AREA:snapover#aa0000:\"Snap\: Over resv.\":STACK ";
 $def[1] .= "GPRINT:snapover:LAST:\"%6.2lf%S\\n\" ";
 $def[1] .= "AREA:snapfree#00ffff:\"Snap\: Free space\":STACK ";
 $def[1] .= "GPRINT:snapfree:LAST:\"%6.2lf%S\\n\" ";
-$def[1] .= "AREA:snap#0000cc:\"Snap\: Used space\":STACK ";
+$def[1] .= "AREA:snapwoover#0000cc:\"Snap\: Used space\":STACK ";
 $def[1] .= "GPRINT:snap:LAST:\"%6.2lf%S\\n\" ";
 
 $def[1] .= "LINE1:datatotal#000000 "; 
