@@ -15,6 +15,8 @@ import netsnmp
 RETURNSTRINGS = { 0: "OK", 1: "WARNING", 2: "CRITICAL", 3: "UNKNOWN", 127: "UNKNOWN" }
 RETURNCODE = { 'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3 }
 
+available_subsys = ['global', 'version', 'cpu', 'environment', 'nvram', 'sparedisk', 'faileddisk', 'fs', 'vol', 'cifs-users', 'cifs-stats', 'cluster', 'snapmirror', 'cacheage', 'cp', 'ifstat', 'diskio', 'tapeio', 'ops']
+
 OIDs	= {
 		'Uptime':			'.1.3.6.1.2.1.1.3.0',
 		'ONTAP_Version':		'.1.3.6.1.4.1.789.1.1.2.0',
@@ -29,6 +31,9 @@ OIDs	= {
 		'Net_SentKB':			'.1.3.6.1.4.1.789.1.2.2.3.0',
 		'Net64_RcvdKB':			'.1.3.6.1.4.1.789.1.2.2.30.0',
 		'Net64_SentKB':			'.1.3.6.1.4.1.789.1.2.2.31.0',
+		'Net_ifNumber':			'.1.3.6.1.4.1.789.1.22.1.1',
+		'Net_ifIndex':			'.1.3.6.1.4.1.789.1.22.1.2.1.1',
+		'Net_ifDescr':			'.1.3.6.1.4.1.789.1.22.1.2.1.2',
 
 		'Global_Status':		'.1.3.6.1.4.1.789.1.2.2.4.0',
 		'Global_Status_Message':	'.1.3.6.1.4.1.789.1.2.2.25.0',
@@ -112,6 +117,52 @@ OIDs	= {
 		'Snapmirror_Status':		'.1.3.6.1.4.1.789.1.9.20.1.4',
 		'Snapmirror_State':		'.1.3.6.1.4.1.789.1.9.20.1.5',
 	}
+
+OID64s	= {
+		'Net_InBytes':		[	'.1.3.6.1.4.1.789.1.22.1.2.1.4',
+						'.1.3.6.1.4.1.789.1.22.1.2.1.3',
+						'.1.3.6.1.4.1.789.1.22.1.2.1.25',],
+		'Net_OutBytes':		[	'.1.3.6.1.4.1.789.1.22.1.2.1.16',
+						'.1.3.6.1.4.1.789.1.22.1.2.1.15',
+						'.1.3.6.1.4.1.789.1.22.1.2.1.31',],
+		'Net_InDiscards':	[	'.1.3.6.1.4.1.789.1.22.1.2.1.10',
+						'.1.3.6.1.4.1.789.1.22.1.2.1.9',
+						'.1.3.6.1.4.1.789.1.22.1.2.1.28',],
+		'Net_OutDiscards':	[	'.1.3.6.1.4.1.789.1.22.1.2.1.22',
+						'.1.3.6.1.4.1.789.1.22.1.2.1.21',
+						'.1.3.6.1.4.1.789.1.22.1.2.1.34',],
+		'Net_InErrors':		[	'.1.3.6.1.4.1.789.1.22.1.2.1.12',
+						'.1.3.6.1.4.1.789.1.22.1.2.1.11',
+						'.1.3.6.1.4.1.789.1.22.1.2.1.29',],
+		'Net_OutErrors':	[	'.1.3.6.1.4.1.789.1.22.1.2.1.24',
+						'.1.3.6.1.4.1.789.1.22.1.2.1.23',
+						'.1.3.6.1.4.1.789.1.22.1.2.1.35',],
+
+		'DiskIO_ReadBytes':	[	'.1.3.6.1.4.1.789.1.2.2.16',
+						'.1.3.6.1.4.1.789.1.2.2.15',
+						'.1.3.6.1.4.1.789.1.2.2.32',],
+		'DiskIO_WriteBytes':	[	'.1.3.6.1.4.1.789.1.2.2.18',
+						'.1.3.6.1.4.1.789.1.2.2.17',
+						'.1.3.6.1.4.1.789.1.2.2.33',],
+
+		'TapeIO_ReadBytes':	[	'.1.3.6.1.4.1.789.1.2.2.20',
+						'.1.3.6.1.4.1.789.1.2.2.19',
+						'.1.3.6.1.4.1.789.1.2.2.34',],
+		'TapeIO_WriteBytes':	[	'.1.3.6.1.4.1.789.1.2.2.22',
+						'.1.3.6.1.4.1.789.1.2.2.21',
+						'.1.3.6.1.4.1.789.1.2.2.35',],
+
+		'OPs_NFS':		[	'.1.3.6.1.4.1.789.1.2.2.6',
+						'.1.3.6.1.4.1.789.1.2.2.5',
+						'.1.3.6.1.4.1.789.1.2.2.27',],
+		'OPs_CIFS':		[	'.1.3.6.1.4.1.789.1.2.2.8',
+						'.1.3.6.1.4.1.789.1.2.2.7',
+						'.1.3.6.1.4.1.789.1.2.2.28',],
+		'OPs_HTTP':		[	'.1.3.6.1.4.1.789.1.2.2.10',
+						'.1.3.6.1.4.1.789.1.2.2.9',
+						'.1.3.6.1.4.1.789.1.2.2.29',],
+	}
+
 
 Enum_CPU_Arch = {
 		'1' : 'x86',
@@ -312,6 +363,30 @@ def get_kb_fs(fsid):
 
 	return (dfFSkBTotal, dfFSkBUsed, dfFSkBAvail)
 
+def find_in_table(oid_index, oid_names, wanted):
+	index = None
+	indexes	= list(SNMPWALK(oid_index))
+	names	= list(SNMPWALK(oid_names))
+
+	try:
+		index = names.index(wanted)
+		index = indexes[index]
+	except ValueError:
+		pass
+
+	return index
+
+def get64bits(oids, idx):
+	if options.version == '1':
+		value = long(SNMPGET(oids[0] + "." + idx))
+		if value < 0L:
+			value += 2 ** 32
+		value += long(SNMPGET(oids[1] + "." + idx)) * 2L ** 32L
+	else:
+		value = long(SNMPGET(oids[2] + "." + idx))
+
+	return value
+
 def back2nagios(retcode, retmsg):
 	print 'NETAPP(%s) %s - %s' % (options.subsys, RETURNSTRINGS[retcode], retmsg)
 	sys.exit(retcode)
@@ -356,6 +431,10 @@ parser.add_option("-f", "",
 		  dest="fs",
 		  help="FS Index in SNMP tables",
 		  metavar="FS")
+parser.add_option("-V", "",
+		  dest="var",
+		  help="Variable name",
+		  metavar="FS")
 parser.add_option("-w", "",
 		  dest="warn",
 		  help="WARNING Thresold")
@@ -379,6 +458,7 @@ parser.set_defaults(secname='')
 parser.set_defaults(authkey='')
 parser.set_defaults(subsys='')
 parser.set_defaults(fs='0')
+parser.set_defaults(var='0')
 parser.set_defaults(warn='0')
 parser.set_defaults(crit='0')
 parser.set_defaults(verb=0)
@@ -875,6 +955,62 @@ elif options.subsys == 'cp':
 	ReturnMsg += '|nacpprogress=%ss nacptotal=%sc ' % (float(cp[0])/100, cp[7])
 	ReturnMsg += 'nacpsnapshot=%sc nacplowwatermark=%sc nacphighwatermark=%sc nacplogfull=%s nacpb2b=%sc ' % cp[2:7]
 	ReturnMsg += 'nacpflush=%sc nacpsync=%sc nacplowvbuf=%sc nacpcpdeferred=%sc nacplowdatavecs=%sc' % cp[8:13]
+
+
+
+elif options.subsys == 'ifstat':
+	if options.var == '0':
+		back2nagios(RETURNCODE['UNKNOWN'], 'No network interface name was given (-V NIC)!')
+
+	idx = find_in_table(OIDs['Net_ifIndex'], OIDs['Net_ifDescr'], options.var)
+	if not idx:
+		back2nagios(RETURNCODE['UNKNOWN'], 'No network interface with name "%s" found!' % options.var)
+
+	# get64bits(oids, idx)
+	n_bytes_in	= get64bits(OID64s['Net_InBytes'], idx)
+	n_bytes_out	= get64bits(OID64s['Net_OutBytes'], idx)
+	n_discards_in	= get64bits(OID64s['Net_InDiscards'], idx)
+	n_discards_out	= get64bits(OID64s['Net_OutDiscards'], idx)
+	n_errors_in	= get64bits(OID64s['Net_InErrors'], idx)
+	n_errors_out	= get64bits(OID64s['Net_OutErrors'], idx)
+
+	ReturnCode = RETURNCODE['OK']
+	ReturnMsg  = 'Network statistics for %s' % options.var
+	ReturnMsg += '|nanet_by_in=%sc nanet_by_out=%sc ' % (n_bytes_in, n_bytes_out)
+	ReturnMsg += 'nanet_dis_in=%sc nanet_dis_out=%sc ' % (n_discards_in, n_discards_out)
+	ReturnMsg += 'nanet_err_in=%sc nanet_err_out=%sc ' % (n_errors_in, n_errors_out)
+
+
+
+
+elif options.subsys == 'diskio':
+	dio_read	= get64bits(OID64s['DiskIO_ReadBytes'], '0')
+	dio_write	= get64bits(OID64s['DiskIO_WriteBytes'], '0')
+
+	ReturnCode = RETURNCODE['OK']
+	ReturnMsg  = 'Disk I/O statistics'
+	ReturnMsg += '|nadiskread=%sB nadiskwrite=%sB' % (dio_read, dio_write)
+
+
+
+elif options.subsys == 'tapeio':
+	tio_read	= get64bits(OID64s['TapeIO_ReadBytes'], '0')
+	tio_write	= get64bits(OID64s['TapeIO_WriteBytes'], '0')
+
+	ReturnCode = RETURNCODE['OK']
+	ReturnMsg  = 'Tape I/O statistics'
+	ReturnMsg += '|nataperead=%sB natapewrite=%sB' % (tio_read, tio_write)
+
+
+
+elif options.subsys == 'ops':
+	ops_nfs		= get64bits(OID64s['OPs_NFS'], '0')
+	ops_cifs	= get64bits(OID64s['OPs_CIFS'], '0')
+	ops_http	= get64bits(OID64s['OPs_HTTP'], '0')
+
+	ReturnCode = RETURNCODE['OK']
+	ReturnMsg  = 'Total ops statistics'
+	ReturnMsg += '|naops_nfs=%sc naops_cifs=%sc naops_http=%sc' % (ops_nfs, ops_cifs, ops_http)
 
 
 
