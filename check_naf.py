@@ -115,6 +115,15 @@ OIDs	= {
 		'Snapmirror_Dst':		'.1.3.6.1.4.1.789.1.9.20.1.3',
 		'Snapmirror_Status':		'.1.3.6.1.4.1.789.1.9.20.1.4',
 		'Snapmirror_State':		'.1.3.6.1.4.1.789.1.9.20.1.5',
+		'Snapmirror_Lag':		'.1.3.6.1.4.1.789.1.9.20.1.6',
+
+		'Snapvault_On':			'.1.3.6.1.4.1.789.1.19.1.0',
+		'Snapvault_Index':		'.1.3.6.1.4.1.789.1.19.11.1.1',
+		'Snapvault_Src':		'.1.3.6.1.4.1.789.1.19.11.1.2',
+		'Snapvault_Dst':		'.1.3.6.1.4.1.789.1.19.11.1.3',
+		'Snapvault_Status':		'.1.3.6.1.4.1.789.1.19.11.1.4',
+		'Snapvault_State':		'.1.3.6.1.4.1.789.1.19.11.1.5',
+		'Snapvault_Lag':		'.1.3.6.1.4.1.789.1.19.11.1.6',
 	}
 
 OID64s	= {
@@ -245,6 +254,29 @@ Enum_Snapmirror_State = {
 		'5' : 'source',
 		'6' : 'unknown',
 }
+Enum_Snapvault_Status = {
+		'1' : 'idle',
+		'2' : 'transferring',
+		'3' : 'pending',
+		'4' : 'aborting',
+		'5' : 'unknown_5',
+		'6' : 'quiescing',
+		'7' : 'resyncing',
+		'8' : 'unknown_8',
+		'9' : 'unknown_9',
+		'10': 'unknown_10',
+		'11': 'unknown_11',
+		'12': 'paused',
+}
+Enum_Snapvault_State = {
+		'1' : 'uninitialized',
+		'2' : 'snapvaulted',
+		'3' : 'brokenOff',
+		'4' : 'quiesced',
+		'5' : 'source',
+		'6' : 'unknown',
+		'7' : 'restoring',
+}
 Enum_Licensed = {
 		'1' : 'false',
 		'2' : 'true',
@@ -263,6 +295,7 @@ OkWarnCrit = {
 		'ClusterState':			(     (2,4,),         (),     (1,3,), ),
 		'ClusterInterconnectStatus':	(       (4,),       (3,),     (1,2,), ),
 		'SnapmirrorState':		(     (2,5,),   (1,4,6,),       (3,), ),
+		'SnapvaultState':		(   (2,5,7,), (1,3,4,6,),    (None,), ),
 	}
 
 ##################################################################################################
@@ -427,6 +460,9 @@ def find_in_table(oid_index, oid_names, wanted):
 	index = None
 	indexes	= list(SNMPWALK(oid_index))
 	names	= list(SNMPWALK(oid_names))
+
+	if len(indexes) != len(names):
+		back2nagios(RETURNCODE['UNKNOWN'], 'SNMP Error: Different informations from 2 SNMP Walks!')
 
 	try:
 		index = names.index(wanted)
@@ -1038,14 +1074,76 @@ elif options.subsys == 'snapmirror':
 				SnapmirrorDst		= SNMPGET(OIDs['Snapmirror_Dst'] + "." + idx)
 				SnapmirrorStatus	= int(SNMPGET(OIDs['Snapmirror_Status'] + "." + idx))
 				SnapmirrorState		= int(SNMPGET(OIDs['Snapmirror_State'] + "." + idx))
+				SnapmirrorLag		= int(SNMPGET(OIDs['Snapmirror_Lag'] + "." + idx)) / 100
 
 				if SnapmirrorState in OkWarnCrit['SnapmirrorState'][2]:
 					ReturnCode = RETURNCODE['CRITICAL']
 				elif SnapmirrorState in OkWarnCrit['SnapmirrorState'][1]:
 					ReturnCode = RETURNCODE['WARNING']
 
-				ReturnMsg = 'SnapMiror state is \'' + Enum_Snapmirror_State[str(SnapmirrorState)] + '\'. '
-				ReturnMsg += 'Source: \'' + SnapmirrorSrc + '\', Destination: \'' + SnapmirrorDst + '\', Status: \'' + Enum_Snapmirror_Status[str(SnapmirrorStatus)] + '\''
+				LagMsg = ''
+				if options.warn != '0':
+					if SnapmirrorLag > int(options.warn):
+						if ReturnCode == RETURNCODE['OK']:
+							ReturnCode = RETURNCODE['WARNING']
+						LagMsg = 'Lag too high (%s > %s) - ' % (SnapmirrorLag, options.warn)
+				if options.crit != '0':
+					if SnapmirrorLag > int(options.crit):
+						ReturnCode = RETURNCODE['CRITICAL']
+						LagMsg = 'Lag too high (%s > %s) - ' % (SnapmirrorLag, options.crit)
+
+				ReturnMsg = LagMsg + 'SnapMiror state is \'' + Enum_Snapmirror_State[str(SnapmirrorState)] + '\'. '
+				ReturnMsg += 'Source: \'' + SnapmirrorSrc + '\', Destination: \'' + SnapmirrorDst + '\', Lag: ' + str(SnapmirrorLag) + 's, Status: \'' + Enum_Snapmirror_Status[str(SnapmirrorStatus)] + '\''
+
+
+
+elif options.subsys == 'snapvault':
+	LicPrim = int(SNMPGET(OIDs['License_SnapVaultPrimary']))
+	LicSec = int(SNMPGET(OIDs['License_SnapVaultSecondary']))
+	if not LicPrim and not LicSec:
+		ReturnMsg = 'SnapVault not licensed!'
+		ReturnCode = RETURNCODE['CRITICAL']
+	else:
+		SnapvaultOn = SNMPGET(OIDs['Snapvault_On'])
+		if SnapvaultOn != '2':
+			ReturnMsg = 'SnapVault is off!'
+			ReturnCode = RETURNCODE['CRITICAL']
+		else:
+			ReturnCode = RETURNCODE['OK']
+
+			if options.var == '0':
+				ReturnMsg  = 'SnapVault is on'
+			else:
+				idx = find_in_table(OIDs['Snapvault_Index'], OIDs['Snapvault_Dst'], options.var)
+				if not idx:
+					idx = find_in_table(OIDs['Snapvault_Index'], OIDs['Snapvault_Src'], options.var)
+				if not idx:
+					back2nagios(RETURNCODE['UNKNOWN'], 'No snapvault "%s" found!' % options.var)
+
+				SnapvaultSrc = SNMPGET(OIDs['Snapvault_Src'] + "." + idx)
+				SnapvaultDst = SNMPGET(OIDs['Snapvault_Dst'] + "." + idx)
+				SnapvaultStatus = int(SNMPGET(OIDs['Snapvault_Status'] + "." + idx))
+				SnapvaultState = int(SNMPGET(OIDs['Snapvault_State'] + "." + idx))
+				SnapvaultLag = int(SNMPGET(OIDs['Snapvault_Lag'] + "." + idx)) / 100
+
+				if SnapvaultState in OkWarnCrit['SnapvaultState'][2]:
+					ReturnCode = RETURNCODE['CRITICAL']
+				elif SnapvaultState in OkWarnCrit['SnapvaultState'][1]:
+					ReturnCode = RETURNCODE['WARNING']
+
+				LagMsg = ''
+				if options.warn != '0':
+					if SnapvaultLag > int(options.warn):
+						if ReturnCode == RETURNCODE['OK']:
+							ReturnCode = RETURNCODE['WARNING']
+						LagMsg = 'Lag too high (%s > %s) - ' % (SnapvaultLag, options.warn)
+				if options.crit != '0':
+					if SnapvaultLag > int(options.crit):
+						ReturnCode = RETURNCODE['CRITICAL']
+						LagMsg = 'Lag too high (%s > %s) - ' % (SnapvaultLag, options.crit)
+
+				ReturnMsg = LagMsg + 'SnapMiror state is \'' + Enum_Snapvault_State[str(SnapvaultState)] + '\'. '
+				ReturnMsg += 'Source: \'' + SnapvaultSrc + '\', Destination: \'' + SnapvaultDst + '\', Lag: ' + str(SnapvaultLag) + 's, Status: \'' + Enum_Snapvault_Status[str(SnapvaultStatus)] + '\''
 
 
 
