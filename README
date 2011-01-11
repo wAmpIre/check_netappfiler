@@ -1,6 +1,4 @@
-Quick guide to get SNMPv1 up and running on ONTAP:
-
-- Set up some things on the FAS:
+- Set up SNMP on the FAS/ONTAP:
 
   toaster> snmp contact Toaster Master <toasters@mycompany.com>
   toaster> snmp location Somewhere in the basement
@@ -9,8 +7,17 @@ Quick guide to get SNMPv1 up and running on ONTAP:
 
 - On your UNIX box:
 
-  + You need "snmpget" as "/usr/bin/snmpget".
+  + Either (recommended) ...
 
-  + root@monitor:~> .../check_netappfiler.py -H toaster
-    NETAPP(global) OK - FAS2020: The system's global status is normal.
+    * Install NET-SNMP Python bindings
+
+      On Debian/Ubuntu: sudo apt-get install libsnmp-python
+
+  + ... or
+
+    * You need "snmp(get|walk)" as "/usr/bin/snmp(get|walk)"
+      or specify path with "--path /PATH/TO/"
+
+- nagios@monitor:~> .../check_netappfiler.py -H toaster
+  NETAPP(global) OK - FAS2020: The system's global status is normal.
 

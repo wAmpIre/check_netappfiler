@@ -1,3 +1,9 @@
+2011-01-11:
+===========
+- Move old scripts "check_netappfiler(|_netsnmp).py" to old/
+- Rename "check_naf.py" to "check_netappfiler.py"
+- Adjust test scripts "testall*.sh"
+
 2009-03-19:
 ===========
 - Re-Added "version" subsystem due to user request

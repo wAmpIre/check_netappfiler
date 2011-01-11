@@ -9,9 +9,14 @@ then
 	exit 1
 fi
 
-for TEST in global cpu environment nvram sparedisk faileddisk cifs-users cifs-stats cluster snapmirror cacheage
+for TEST in global version cpu environment nvram sparedisk faileddisk cifs-users cifs-stats cluster snapmirror snapvault cacheage cp diskio tapeio ops
 do
 	./check_netappfiler.py -H $1 -P3 -U $SECNAME -A $AUTHKEY -s $TEST
+done
+
+for NIC in lo e0a e0b e1a e1b
+do
+	./check_netappfiler.py -H $1 -P3 -U $SECNAME -A $AUTHKEY -s ifstat -V $NIC
 done
 
 for FSIDX in aggr0 /vol/vol0
@@ -19,18 +24,18 @@ do
 	./check_netappfiler.py -H $1 -P3 -U $SECNAME -A $AUTHKEY -s fs -f $FSIDX -w 50 -c 75
 done
 
-for FSIDX in `seq 1 12`
+for FSIDX in `seq 1 8`
 do
-	./check_netappfiler.py -H $1 -P3 -U $SECNAME -A $AUTHKEY -s fs -f $FSIDX -w 50% -c 75%
+	./check_netappfiler.py -H $1 -P3 -U $SECNAME -A $AUTHKEY -s fs -f $FSIDX -w 50 -c 75
 done
 
 for FSIDX in aggr0 /vol/vol0
 do
-	./check_netappfiler.py -H $1 -P3 -U $SECNAME -A $AUTHKEY -s vol -f $FSIDX -w 40% -c 20%
+	./check_netappfiler.py -H $1 -P3 -U $SECNAME -A $AUTHKEY -s vol -f $FSIDX -w 50% -c 75%
 done
 
-for FSIDX in `seq 1 12`
+for FSIDX in 3 5 7
 do
-	./check_netappfiler.py -H $1 -P3 -U $SECNAME -A $AUTHKEY -s vol -f $FSIDX -w 40% -c 20%
+	./check_netappfiler.py -H $1 -P3 -U $SECNAME -A $AUTHKEY -s vol -f $FSIDX -w 50% -c 75%
 done
 

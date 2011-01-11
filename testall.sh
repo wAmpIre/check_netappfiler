@@ -6,9 +6,14 @@ then
 	exit 1
 fi
 
-for TEST in global cpu environment nvram sparedisk faileddisk cifs-users cifs-stats cluster snapmirror cacheage
+for TEST in global version cpu environment nvram sparedisk faileddisk cifs-users cifs-stats cluster snapmirror snapvault cacheage cp diskio tapeio ops
 do
 	./check_netappfiler.py -H $1 -s $TEST
+done
+
+for NIC in lo e0a e0b e1a e1b
+do
+	./check_netappfiler.py -H $1 -s ifstat -V $NIC
 done
 
 for FSIDX in aggr0 /vol/vol0

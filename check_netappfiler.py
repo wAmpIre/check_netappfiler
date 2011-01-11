@@ -13,7 +13,7 @@ import sys
 RETURNSTRINGS	= { 0: "OK", 1: "WARNING", 2: "CRITICAL", 3: "UNKNOWN", 127: "UNKNOWN" }
 RETURNCODE	= { 'OK': 0, 'WARNING': 1, 'CRITICAL': 2, 'UNKNOWN': 3 }
 
-available_subsys = ['global', 'version', 'cpu', 'environment', 'nvram', 'disk', 'sparedisk', 'faileddisk', 'fs', 'vol', 'cifs-users', 'cifs-stats', 'cluster', 'snapmirror', 'cacheage', 'cp', 'ifstat', 'diskio', 'tapeio', 'ops']
+available_subsys = ['global', 'version', 'cpu', 'environment', 'nvram', 'disk', 'sparedisk', 'faileddisk', 'fs', 'vol', 'cifs-users', 'cifs-stats', 'cluster', 'snapmirror', 'snapvault', 'cacheage', 'cp', 'ifstat', 'diskio', 'tapeio', 'ops']
 
 OIDs	= {
 		'Uptime':			'.1.3.6.1.2.1.1.3.0',
